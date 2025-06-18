@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Step Tracker Navigation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-top: 20px;
+      color: #333;
+    }
+    #routeSelect {
+      margin: 10px;
+      padding: 8px 12px;
+      font-size: 16px;
+    }
+    #stepCount {
+      font-size: 24px;
+      margin: 10px;
+      color: #0077cc;
+    }
+    #map {
+      margin-top: 20px;
+      width: 300px;
+      height: 300px;
+      position: relative;
+      background: #fff;
+      border: 2px solid #ccc;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #0077cc;
+      position: absolute;
+    }
+    .tracker {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: red;
+      position: absolute;
+      transition: 0.2s linear;
+    }
+  </style>
+</head>
+<body>
+  <h1>Step Navigation</h1>
+
+  <select id="routeSelect">
+    <option value="">Select Route</option>
+    <option value="A-B">A → B</option>
+    <option value="C-D">C → D</option>
+    <option value="F-G">F → G</option>
+  </select>
+
+  <div id="stepCount">Steps Remaining: -</div>
+  <div id="map"></div>
+
+  <script>
+    const map = document.getElementById("map");
+    const stepCountText = document.getElementById("stepCount");
+    const routeSelect = document.getElementById("routeSelect");
+
+    let stepsRemaining = 0;
+    let tracker;
+    let path = []; // array of {x, y}
+    let stepIndex = 0;
+
+    const routes = {
+      "A-B": {
+        steps: 100,
+        path: generatePath([
+          { dx: 0, dy: -10, count: 20 },
+          { dx: 10, dy: 0, count: 20 },
+          { dx: 0, dy: 10, count: 40 },
+          { dx: -10, dy: 0, count: 20 },
+        ], 150, 150)
+      },
+      "C-D": {
+        steps: 20,
+        path: generatePath([
+          { dx: 0, dy: -10, count: 10 },
+          { dx: 10, dy: 0, count: 10 },
+        ], 100, 200)
+      },
+      "F-G": {
+        steps: 50,
+        path: generatePath([
+          { dx: 0, dy: -10, count: 30 },
+          { dx: 10, dy: 0, count: 20 },
+        ], 50, 250)
+      }
+    };
+
+    function generatePath(directions, startX, startY) {
+      let x = startX, y = startY;
+      const path = [];
+      directions.forEach(dir => {
+        for (let i = 0; i < dir.count; i++) {
+          path.push({ x, y });
+          x += dir.dx;
+          y += dir.dy;
+        }
+      });
+      return path;
+    }
+
+    function drawPath(path) {
+      map.innerHTML = ""; // clear map
+      path.forEach(dot => {
+        const dotEl = document.createElement("div");
+        dotEl.className = "dot";
+        dotEl.style.left = dot.x + "px";
+        dotEl.style.top = dot.y + "px";
+        map.appendChild(dotEl);
+      });
+
+      tracker = document.createElement("div");
+      tracker.className = "tracker";
+      tracker.style.left = path[0].x + "px";
+      tracker.style.top = path[0].y + "px";
+      map.appendChild(tracker);
+    }
+
+    routeSelect.addEventListener("change", () => {
+      const selected = routeSelect.value;
+      if (!selected || !routes[selected]) return;
+
+      stepsRemaining = routes[selected].steps;
+      stepIndex = 0;
+      path = routes[selected].path;
+
+      drawPath(path);
+      updateStepText();
+    });
+
+    function updateStepText() {
+      stepCountText.innerText = "Steps Remaining: " + stepsRemaining;
+    }
+
+    // Step detection using accelerometer
+    let lastStepTime = 0;
+    let threshold = 12;
+
+    if (window.DeviceMotionEvent) {
+      window.addEventListener("devicemotion", event => {
+        const acc = event.accelerationIncludingGravity;
+        if (!acc) return;
+
+        const totalAcc = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
+        const now = Date.now();
+
+        if (totalAcc > threshold && now - lastStepTime > 400 && stepsRemaining > 0) {
+          stepsRemaining--;
+          stepIndex++;
+          updateStepText();
+          moveTracker();
+          lastStepTime = now;
+        }
+      });
+    }
+
+    function moveTracker() {
+      if (!tracker || stepIndex >= path.length) return;
+      const next = path[stepIndex];
+      tracker.style.left = next.x + "px";
+      tracker.style.top = next.y + "px";
+
+      if (stepIndex === path.length - 1 || stepsRemaining === 0) {
+        alert("🎉 You’ve reached your destination!");
+      }
+    }
+  </script>
+</body>
+</html>
