@@ -160,7 +160,7 @@
         const totalAcc = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
         const now = Date.now();
 
-        if (totalAcc > threshold && now - lastStepTime > 400 && stepsRemaining > 0) {
+        if (totalAcc > threshold && now - lastStepTime > 300 && stepsRemaining > 0) {
           stepsRemaining--;
           stepIndex++;
           updateStepText();
