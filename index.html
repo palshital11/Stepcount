@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simple Step Counter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f0f4f8;
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    #count {
+      font-size: 48px;
+      color: #0077cc;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #0077cc;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Step Count</h1>
+    <div id="count">0</div>
+    <button onclick="resetSteps()">Reset</button>
+  </div>
+
+  <script>
+    let steps = 0;
+    let lastStepTime = 0;
+    let threshold = 12; // You can fine-tune this
+    let isRunning = false;
+
+    if (window.DeviceMotionEvent) {
+      window.addEventListener("devicemotion", (event) => {
+        let acc = event.accelerationIncludingGravity;
+        if (!acc) return;
+
+        let totalAcc = Math.sqrt(
+          acc.x * acc.x + acc.y * acc.y + acc.z * acc.z
+        );
+
+        let currentTime = new Date().getTime();
+        if (totalAcc > threshold && currentTime - lastStepTime > 400) {
+          steps++;
+          document.getElementById("count").innerText = steps;
+          lastStepTime = currentTime;
+        }
+      });
+    } else {
+      alert("DeviceMotion is not supported on this device/browser.");
+    }
+
+    function resetSteps() {
+      steps = 0;
+      document.getElementById("count").innerText = steps;
+    }
+  </script>
+</body>
+</html>
