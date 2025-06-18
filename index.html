@@ -30,15 +30,15 @@
     }
     #map {
       margin-top: 20px;
-      width: 300px;
-      height: 300px;
+      width: 500px;
+      height: 500px;
       position: relative;
       background: #fff;
       border: 2px solid #ccc;
     }
     .dot {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       background: #0077cc;
       position: absolute;
@@ -73,32 +73,34 @@
 
     let stepsRemaining = 0;
     let tracker;
-    let path = []; // array of {x, y}
+    let path = [];
     let stepIndex = 0;
+
+    const STEP_SIZE = 6;
 
     const routes = {
       "A-B": {
         steps: 100,
         path: generatePath([
-          { dx: 0, dy: -10, count: 20 },
-          { dx: 10, dy: 0, count: 20 },
-          { dx: 0, dy: 10, count: 40 },
-          { dx: -10, dy: 0, count: 20 },
-        ], 150, 150)
+          { dx: 0, dy: STEP_SIZE, count: 20 },
+          { dx: STEP_SIZE, dy: 0, count: 20 },
+          { dx: 0, dy: -STEP_SIZE, count: 40 },
+          { dx: -STEP_SIZE, dy: 0, count: 20 },
+        ], 100, 400)
       },
       "C-D": {
         steps: 20,
         path: generatePath([
-          { dx: 0, dy: -10, count: 10 },
-          { dx: 10, dy: 0, count: 10 },
-        ], 100, 200)
+          { dx: 0, dy: -STEP_SIZE, count: 10 },
+          { dx: STEP_SIZE, dy: 0, count: 10 },
+        ], 200, 350)
       },
       "F-G": {
         steps: 50,
         path: generatePath([
-          { dx: 0, dy: -10, count: 30 },
-          { dx: 10, dy: 0, count: 20 },
-        ], 50, 250)
+          { dx: 0, dy: -STEP_SIZE, count: 30 },
+          { dx: STEP_SIZE, dy: 0, count: 20 },
+        ], 300, 450)
       }
     };
 
@@ -116,7 +118,7 @@
     }
 
     function drawPath(path) {
-      map.innerHTML = ""; // clear map
+      map.innerHTML = "";
       path.forEach(dot => {
         const dotEl = document.createElement("div");
         dotEl.className = "dot";
@@ -148,9 +150,9 @@
       stepCountText.innerText = "Steps Remaining: " + stepsRemaining;
     }
 
-    // Step detection using accelerometer
+    // Step detection logic
     let lastStepTime = 0;
-    let threshold = 12;
+    let threshold = 15;
 
     if (window.DeviceMotionEvent) {
       window.addEventListener("devicemotion", event => {
@@ -160,7 +162,7 @@
         const totalAcc = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
         const now = Date.now();
 
-        if (totalAcc > threshold && now - lastStepTime > 300 && stepsRemaining > 0) {
+        if (totalAcc > threshold && now - lastStepTime > 400 && stepsRemaining > 0) {
           stepsRemaining--;
           stepIndex++;
           updateStepText();
